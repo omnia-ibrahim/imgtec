@@ -1,0 +1,36 @@
+.page-title {
+    margin-bottom: 20px;
+}
+
+.mdl-textfield__label:after {
+    background-color: #59A59C; 
+}
+
+.page-title {
+    margin-bottom: 20px;
+}
+
+.mdl-grid {
+    &.metrics-grid {
+        padding:0;
+        .mdl-cell {
+            margin:0;
+            margin-bottom: 30px;
+            
+            &:first-of-type {
+                margin-right: 30px;
+            }
+            
+              @media screen and (max-width: 839px){
+                 &:first-of-type {
+                    margin-right: 0;
+                }
+                
+                & {
+                    width: 100%;
+                }
+            }
+        }
+    }
+    
+}

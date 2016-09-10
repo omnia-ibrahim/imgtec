@@ -1,0 +1,21 @@
+name = "FlowAdmin"
+description = "Creator tenant management services"
+package = "FlowAdmin"
+core = 7.x
+
+; flowautho module contains functionality that is shared among all Creator modules
+dependencies[] = flowautho
+
+files[] = fdw.devicetypes.services.inc
+files[] = fdw.devicetypes.services.impl.inc
+files[] = flowadmin.devicetypes.inc
+files[] = fdw.flowmessaging.services.inc
+files[] = fdw.flowmessaging.services.impl.inc
+files[] = flowadmin.topics.inc
+files[] = fdw.datastores.services.inc
+files[] = fdw.datastores.services.impl.inc
+files[] = flowadmin.datastores.inc
+
+scripts[] = flowadmin.js
+
+

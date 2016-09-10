@@ -1,0 +1,24 @@
+.mdl-tabs.is-upgraded {
+    .mdl-tabs__tab-bar {
+        float: left;
+        border-bottom: 0;
+
+        .mdl-tabs__tab {
+            &:after {
+                background: #59A59C;    
+            }        
+        }
+    }      
+}
+
+.flex {
+    
+    &.navbar {
+        border:0;
+    }
+    border-top:1px solid #eee;
+    width: 100%;
+    clear:both; display:block;
+    height:15px;
+    margin-bottom: 10px;
+}

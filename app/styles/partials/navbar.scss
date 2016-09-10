@@ -1,0 +1,58 @@
+$navbar-bg: linear-gradient(to top, #d1d0d1, #e9e7e9);
+$navbar-border: #eee;
+
+header {
+  
+  // Override default mdl props
+  margin-left: 0;
+  width: auto;
+  box-shadow: none;
+  
+  background: $navbar-bg;
+  border:0; margin-bottom:0;
+  padding-left:0; padding-right:0;
+  height: $navbar-height;
+  border-radius: 0;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+  
+  
+  .navbar-brand {
+    color: $primary-color;
+    font-size:18px;
+    text-transform: uppercase;
+    font-weight: 500;
+    margin:0 0 0 5px;
+  }
+  
+  .navbar-logo-container {
+    .logo {
+        margin-top:-10px;
+        display: block;
+        text-indent: -9999px;
+        width: 74px; height: 27px;
+        background: url(img/logo.svg);
+        background-size: 74px 27px;
+    }
+  }
+ 
+}
+
+
+// Drawer button
+
+@media screen and (min-width: 1025px){ 
+    .mdl-layout__drawer-button {
+        display: none;   
+    }
+}
+
+// MDL override
+.mdl-layout--fixed-drawer.is-upgraded:not(.is-small-screen)>.mdl-layout__header {
+    margin-left: 0;
+    width: auto;
+}
+
+
+
+

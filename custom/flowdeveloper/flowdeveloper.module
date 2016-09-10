@@ -1,0 +1,629 @@
+<?php
+//$Id$
+
+define('FDW_NODE', 'flowdeveloper');
+define('FDW_MYACCOUNT', 'myaccount');
+
+/**
+ * Admin Settings form constants
+ */
+define('FLOWDEVEL_ADMIN_PERM', 'flowdeveloper admin');
+
+define('FLOWDEVEL_LICENSEE_ADMIN', 'licensee/admin');
+define('FLOWDEVEL_LICENSEE_ADMIN_LIST', 'licensee/admin/list');
+define('FLOWDEVEL_LICENSEE_ADMIN_ADD', 'licensee/admin/add');
+define('FLOWDEVEL_LICENSEE_ADMIN_UPDATE', 'licensee/admin/update');
+
+define('FLOWDEVEL_LVISIBILITY_VISIBLE', '1');
+define('FLOWDEVEL_LVISIBILITY_HIDDEN', '0');
+
+define('FDW_ADMIN_SETTINGS_NODE', 'admin/settings/');
+define('FDW_ADMIN_PERM', 'Update flowdeveloper settings');
+
+define('FLOWDEVEL_SENDER_EMAIL', variable_get('flowdeveloper_sender_email','developer@flowworld.com'));
+define('FLOWDEVEL_SUPPORT_EMAIL', variable_get('flowdeveloper_support_email','Paul.Evans@imgtec.com'));
+define('FLOWDEVEL_FLOWCLOUD_SUPPORT_EMAIL', variable_get('flowdeveloper_flowcloud_support_email','FlowCloud-support@imgtec.com'));
+define('FLOWDEVEL_FLOWSYSADMIN_EMAIL', variable_get('flowdeveloper_flowsysadmin_email','IMG-FlowSystemAdmin@imgtec.com'));
+
+define('FLOWDEVEL_SKEY_SHOWMSG', 'show-notif-on-reload');
+define('FLOWDEVEL_SKEY_MSGTYPE', 'status');
+define('FLOWDEVEL_SKEY_MSGCLASSES', 'ateclasses');
+
+
+define('FDW_AJAX', 'ajax');
+define('FDW_USER', 'user');
+
+define('FLOWDEVEL_RETRIEVE_FCAP_AJAX', 'retrieve-fcap');
+define('FLOWDEVEL_RETRIEVE_DEVICE_INFO', 'retrieve-info');
+define('FLOWDEVEL_RETRIEVE_DEVICE_STATUS', 'retrieve-status');
+define('FLOWDEVEL_UPDATE_DEVICE_INFO', 'update-info');
+
+define('FDW_DASHBOARD_BUILDER', 'builder');
+define('FDW_DASHBOARD_BUILDER_PAGE', 'landing');
+define('FDW_DASHBOARD_BUILDER_CONFIG_PAGE', 'config');
+define('FDW_DASHBOARD_BUILDER_LOGOUT_PAGE', 'logout');
+
+
+define('FLOWDEVEL_REG_DEVICES_BYTYPE', 'registered-devices-bytype');
+define('FLOWDEVEL_CONNECTED_DEVICES', 'connected-devices');
+define('FLOWDEVEL_DEVICES_BY_FIRMWARE', 'devices-by-firmware-versions');
+define('FLOWDEVEL_DEVICES_BANDWIDTH', 'devices-bandwidth');
+define('FLOWDEVEL_DRILL_DOWN', 'drill-down');
+define('FLOWDEVEL_GET', 'get');
+define('FLOWDEVEL_DRILLDOWN_OPTIONS', 'drilldown-options');
+define('FLOWDEVEL_FIRMWARE_VERSIONS', 'firmware-versions');
+
+define('FDW_DEVICE_REG_COOKIE_NAME', 'fcapcode-limit-info');
+define('FDW_DEVICETYPE_VOCAB_MACHINE_NAME', variable_get('flowdeveloper_devicetype_vocabulary_machinename', null));
+
+/**
+ * SIP Variable Definitions
+ */
+
+define('FDW_MESSAGES_WEBSOCKET_SERVER', 'wss://sipproxy-uat.flowworld.com');
+define('FDW_MESSAGES_REGISTRAR_SERVER', 'sip-uat.flowworld.com');
+define('FDW_MESSAGES_UA_STRING', 'FlowCloud JS-SIP Client-User');
+
+
+/**
+ * Dashboard Builder related definitions
+ */
+define('FDW_DASHBOARD_BUILDER_ENABLED', variable_get('fdw_dashboard_builder_on_off', true));
+define('FDW_DASHBOARD_BUILDER_RELATIVE_URL', variable_get('fdw_dashboard_builder_config_url', 'https://dash.flowm2m.io/web-appbuilder/imgtec/web/admin2/index'));
+define('FDW_DASHBOARD_BUILDER_PINNED_DASHBOARDS_PATH', variable_get('fdw_dashboard_builder_landing_url', 'https://dash.flowm2m.io/web-appbuilder/imgtec/web/admin2/landing'));
+define('FDW_DASHBOARD_BUILDER_LOGOUT_PATH', variable_get('fdw_dashboard_builder_logout_url', 'https://dash.flowm2m.io/web-appbuilder/imgtec/web/logout'));
+
+/**
+ * External Resources
+ */
+
+//define('FLOWM2M_DOCS_URL', 'http://docs.flowm2m.io');
+define('FLOWM2M_DOCS_URL', variable_get('fdw_dashboard_docs_url', 'http://10.100.124.228/'));
+define('FLOWDEV_FORUM_URL', 'https://community.imgtec.com/forums/cat/creator-platforms');
+
+define('FDW_UNIT_BYTES', 'byte');
+define('FDW_UNIT_KILOBYTE', 'kb');
+define('FDW_UNIT_MEGABYTE', 'mb');
+
+/**
+ * Includes
+ */
+include_once(drupal_get_path('module', 'user') . '/user.pages.inc');
+require_once('flowdeveloper.util.inc');
+require_once('flowdeveloper.blocks.inc');
+require_once('flowdeveloper.licensee.inc');
+require_once('flowdeveloper.user.inc');
+require_once('flowdeveloper.dashboard.inc');
+require_once('flowdeveloper.devices.inc');
+
+
+/**
+ * themes includes
+ */
+require_once('flowdeveloper.theme.inc');
+require_once('themes/flowdeveloper.theme.homepage.inc');
+require_once('themes/flowdeveloper.theme.user.inc');
+require_once('themes/flowdeveloper.theme.licensee.inc');
+//require_once('themes/templates/flowdeveloper.template.preprocess.functions.inc');
+
+
+require_once('events/flowdeveloper.events.eventtypes.php');
+require_once('events/flowdeveloper.events.util.php');
+require_once('flowdeveloper.menu.handlers.inc');
+
+/**
+ * Amazon S3 specific assets
+ */
+define('FLOWDEVEL_AS3_BUCKET', 'uploads.flowworld.com');
+define('FLOWDEVEL_AS3_KEY', 'AKIAIVV57EKZTY5IOBGA');
+define('FLOWDEVEL_AS3_SECRET', '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');
+
+//require_once('aws.phar');
+require_once('PostPolicy.php');
+
+use Aws\S3\S3Client;
+
+
+/**
+ * Implements hook_init()
+ */
+function flowdeveloper_init()
+{
+	global $user;
+	global $base_path;
+	global $base_url;
+
+	variable_set('user_mail_register_no_approval_required_notify', false);
+	variable_set('user_mail_register_pending_approval_notify', false);
+	variable_set('user_mail_status_activated_notify', false);
+	variable_set('panopoly_users_remove_tabs', false);
+
+	$query = $_GET['q'];
+
+	/**
+	 * Show any messages that where stored in the session before a drupal_goto() was initiated
+	 */
+	if (isset($_SESSION[FLOWDEVEL_SKEY_SHOWMSG]))
+	{
+		if (isset($_SESSION[FLOWDEVEL_SKEY_MSGTYPE]))
+		{
+			if (isset($_SESSION[FLOWDEVEL_SKEY_MSGCLASSES])) 
+			{
+				flowautho_set_message($_SESSION[FLOWDEVEL_SKEY_MSGCLASSES], $_SESSION[FLOWDEVEL_SKEY_SHOWMSG], $_SESSION[FLOWDEVEL_SKEY_MSGTYPE]);
+			}
+			else
+			{
+				drupal_set_message($_SESSION[FLOWDEVEL_SKEY_SHOWMSG], $_SESSION[FLOWDEVEL_SKEY_MSGTYPE]);
+			}
+		}
+		else
+		{
+			drupal_set_message($_SESSION[FLOWDEVEL_SKEY_SHOWMSG]);
+		}
+
+		unset($_SESSION[FLOWDEVEL_SKEY_SHOWMSG]);
+		unset($_SESSION[FLOWDEVEL_SKEY_MSGTYPE]);
+	}
+
+	/**
+	 * Setup any required variables for the logged in user
+	 */
+	$licenseeAdmin = 0;
+	if (user_is_logged_in())
+	{
+		/**
+		 * Determine if a logged in user is a licensee admin or not
+		 */
+		if (flowdeveloper_is_licensee_admin($user->mail, $user->uid))
+		{
+			$licenseeAdmin = 1;
+		}
+		else
+		{
+			$licenseeAdmin = 0;
+		}
+	}
+
+	drupal_add_js(array(
+					  'flowdevuser' => array(
+						  'id' => ($user->uid?md5($user->uid):'anonymous'),
+						  'ladmin' => $licenseeAdmin,
+						  'fcapcodeCookieName' => FDW_DEVICE_REG_COOKIE_NAME
+					  ),
+					  'flowdevmsg' => array(
+						  'errorusername1' => t('Must start with a letter or a number.'),
+						  'errorusername2' => t('Please use only letters, numbers, hyphens, underscores and periods.'),
+						  'erroremail1' => t('A valid email address is required.'),
+						  'errorpassword1' => t('The password should contain at least one digit, one lower case and one upper case characters.'),
+						  'errorrequired' => t('This field is required.'),
+						  'errorminlength' => t('Minimum {0} characters.'),
+						  'erroremail2' => t('Please enter an email address.'),
+						  'errorpassword2' => t('Please enter a password.'),
+					   	  'errorpassword3' => t('Please enter your current password inorder to update your profile.'),
+					  ),
+					  'flowSip' => array(
+						  'websocket_sever' => FDW_MESSAGES_WEBSOCKET_SERVER,
+						  'registrar_server' => FDW_MESSAGES_REGISTRAR_SERVER,
+						  'user_agent_string' => FDW_MESSAGES_UA_STRING
+					  ),
+					  'appbuilder' => array(
+						  'enabled' => FDW_DASHBOARD_BUILDER_ENABLED,
+						  'url' => FDW_DASHBOARD_BUILDER_RELATIVE_URL,
+						  'pinned_dashboards_url' => FDW_DASHBOARD_BUILDER_PINNED_DASHBOARDS_PATH,
+						  'logout_path' => FDW_DASHBOARD_BUILDER_LOGOUT_PATH,
+						  'fdw_base_path' => $base_path,
+					  )
+				  ), 'setting');
+
+	/**
+	 * JS Libraries to include
+	 */
+
+	drupal_add_js(path_to_theme("highness").'/js/desktop-notify-min.js'); //, array('group' => JS_THEME, 'every_page' => TRUE)
+}
+
+/**
+ * Implements hook_permission()
+ */
+function flowdeveloper_permission()
+{
+	$permissions = array(
+
+		FLOWDEVEL_ADMIN_PERM => array(
+			'title' => t('Manage the flowdeveloper website'),
+			'description' => t('Control and manage restricted resources and content')
+		)
+	);
+
+	return $permissions;
+}
+
+/**
+ * Implementation of hook_menu
+ */
+function flowdeveloper_menu()
+{
+	$items = array();
+
+	$items += _flowdeveloper_menu_dashboard();
+	$items += _flowdeveloper_menu_devices();
+
+	$items[FDW_ADMIN_SETTINGS_NODE . FDW_NODE] = array(
+		'title' => t('Flowdeveloper settings'),
+		'description' => t('Settings/options for Flowdeveloper module'),
+		'access callback' => 'user_access',
+		'access arguments' => array(FLOWAUTH_ADMIN_PERM),
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('flowdeveloper_admin_settings_form'),
+		'type' => MENU_NORMAL_ITEM,
+	);
+
+
+	$items[FLOWDEVEL_LICENSEE_ADMIN] = array(
+
+		'title' => t('Licensees'),
+		'description' => t('Add Licensees to the database'),
+		'menu_name' => 'user-menu',
+		'access callback' => 'user_access',
+		'access arguments' => array(FLOWDEVEL_ADMIN_PERM),
+		'page callback' => 'flowdeveloper_generate_licensee_list',
+		'weight' => -12,
+		'type' => MENU_NORMAL_ITEM,
+	);
+
+	$items[FLOWDEVEL_LICENSEE_ADMIN_LIST] = array(
+
+		'title' => t('View Licensees'),
+		'description' => t('View existing list of Licensees'),
+		'menu_name' => 'user-menu',
+		'access callback' => 'user_access',
+		'access arguments' => array(FLOWDEVEL_ADMIN_PERM),
+		'page callback' => 'flowdeveloper_generate_licensee_list',
+		'weight' => 1,
+		'type' => MENU_DEFAULT_LOCAL_TASK,
+	);
+
+	$items['user/validate/%'] = array(
+		'title' => 'Post registration e-mail verification handler',
+		'page callback' => 'flowdeveloper_validate_email',
+		'page arguments' => array(2),
+		'access callback' => true,
+		'type' => MENU_CALLBACK,
+	);
+
+	$items['user/confirm/%/%/%'] = array(
+		'title' => 'Post registration e-mail verification handler',
+		'page callback' => 'flowdeveloper_confirm_email',
+		'page arguments' => array(2,3,4),
+		'access callback' => true,
+		'type' => MENU_CALLBACK,
+	);
+
+	/**
+	 * AJAX endpoint for retrieving the actual fcap code
+	 **/
+	$items[FDW_AJAX.'/'.FDW_USER.'/'.FLOWDEVEL_RETRIEVE_FCAP_AJAX] = array(
+		'title' => t('Fcap Retrieval AJAX endpoint'),
+		'description' => t('Placeholder page to forward fcap to js ajax function'),
+		'page callback' => 'flowdeveloper_get_fcap',
+		'access callback' => true,
+		'type' => MENU_CALLBACK,
+	);
+
+	$items['user/reset/%'] = array(
+		'title' => 'Password reset',
+		'page callback' => 'flowdeveloper_password_reset',
+		'page arguments' => array(2),
+		'access callback' => true,
+		'file' => 'flowdeveloper.user.inc',
+		'type' => MENU_CALLBACK,
+	);
+
+	$items['version-details'] = array(
+		'title' => 'Version number',
+		'page callback' => 'flowdeveloper_version_details',
+		'access callback' => TRUE,
+		'type' => MENU_CALLBACK,
+	);
+
+	/**
+	 * Entry point for app builder dashboard - routing
+	 */
+
+	$items[FDW_DASHBOARD.'/'.FDW_DASHBOARD_BUILDER_PAGE] = array(
+		'title' => t('Dashboard Builder'),
+		'description' => t('Dashboard builder entry point'),
+		'page callback' => 'flowdeveloper_dashboard_builder_page',
+		'access callback' => true,
+		'type' => MENU_CALLBACK,
+	);
+
+	$items[FDW_DASHBOARD.'/'.FDW_DASHBOARD_BUILDER_CONFIG_PAGE] = array(
+		'title' => t('Dashboard Builder Config'),
+		'description' => t('Dashboard builder config point'),
+		'page callback' => 'flowdeveloper_dashboard_builder_config_page',
+		'access callback' => true,
+		'type' => MENU_CALLBACK,
+	);
+
+	/**
+	 * Endpoint for user authentication using App builder
+	 */
+	$items[FDW_DASHBOARD.'/'.FDW_DASHBOARD_BUILDER] = array(
+		'title' => t('Dashboard Builder'),
+		'description' => t('Dashboard builder authentication end point'),
+		'page callback' => 'flowdeveloper_dashboard_builder',
+		'access callback' => true,
+		'type' => MENU_CALLBACK,
+	);
+
+	return $items;
+}
+
+/**
+ * Provides the admin settings form for this module
+ *
+ * @param array $form_state
+ */
+function flowdeveloper_admin_settings_form()
+{
+	$form = array();
+
+	$introText = '<h2>' . t('Flowdeveloper settings') . '</h2><br/><br/>';
+
+	$form['intro'] = array(
+		'#type' => 'markup',
+		'#value' =>$introText,
+		'#weight' => 1,
+	);
+
+	$form['fdw_dashboard_builder_on_off'] = array(
+		'#type' => 'checkbox',
+		'#title' => 'Enable/Disable Dashboard Builder',
+		'#description' => 'Enable or disable dashboard builder',
+		'#default_value' => FDW_DASHBOARD_BUILDER_ENABLED,
+		'#weight' => 2,
+
+	);
+
+	$form['fdw_dashboard_builder_config_url'] = array(
+		'#type' => 'textfield',
+		'#title' => 'Dashboard Builder config URL',
+		'#description' => 'Set the default dashboard builder config URL.',
+		'#required' => TRUE,
+		'#default_value' => FDW_DASHBOARD_BUILDER_RELATIVE_URL,
+		'#weight' => 3,
+
+	);
+
+	$form['fdw_dashboard_builder_landing_url'] = array(
+		'#type' => 'textfield',
+		'#title' => 'Dashboard Builder landing URL',
+		'#description' => 'Set the default dashboard builder landing URL. (Pinned dashboards)',
+		'#required' => TRUE,
+		'#default_value' => FDW_DASHBOARD_BUILDER_PINNED_DASHBOARDS_PATH,
+		'#weight' => 4,
+	);
+
+	$form['fdw_dashboard_builder_logout_url'] = array(
+		'#type' => 'textfield',
+		'#title' => 'Dashboard Builder logout URL',
+		'#description' => 'Set the default dashboard builder logout URL.',
+		'#required' => TRUE,
+		'#default_value' => FDW_DASHBOARD_BUILDER_LOGOUT_PATH,
+		'#weight' => 5,
+	);
+	
+	
+	$form['fdw_dashboard_docs_url'] = array(
+		'#type' => 'textfield',
+		'#title' => 'Creator Docs URL',
+		'#description' => 'Set the URL for Creator documentation.',
+		'#required' => TRUE,
+		'#default_value' => FLOWM2M_DOCS_URL,
+		'#weight' => 6,
+	);
+	
+	
+
+
+	$form = system_settings_form($form);
+	$form['#validate'][] = 'flowdeveloper_admin_settings_form_validate';
+	$form['#submit'][] = 'flowdeveloper_admin_settings_form_submit';
+
+	return $form;
+}
+
+/** Where Dashboard builder gets auth tokens for the logged in user
+ * Route: /dashboard/builder
+ */
+function flowdeveloper_dashboard_builder(){
+	global $user;
+
+	$token = $_GET['token'];
+	$credentials = flowautho_get_oauth_credentialsFCAB($token);
+	echo json_encode($credentials);
+	exit;
+}
+
+
+function flowdeveloper_dashboard_builder_config_page(){
+	//	No title please
+	drupal_set_title("");
+
+	// Hack or not?
+	return '<div id="appbuilder-container">
+				<iframe seamless></iframe>
+			</div>';
+}
+
+function flowdeveloper_dashboard_builder_page(){
+	//	No title please
+	drupal_set_title("");
+
+	// Hack or not?
+	return '<div id="appbuilder-pinned-dashboards-container">
+				<iframe seamless src=""></iframe>
+			</div>';
+}
+
+/**
+ * Admin settings form validation handler
+ *
+ * @param array $form
+ * @param array $form_state
+ */
+function flowdeveloper_admin_settings_form_validate($form, &$form_state)
+{
+
+}
+
+/**
+ * Admin settings form submit handler
+ *
+ * @param array $form
+ * @param array $form_state
+ */
+function flowdeveloper_admin_settings_form_submit($form, &$form_state)
+{
+
+	$appbuilder_enabled = $form_state['values']['fdw_dashboard_builder_on_off'];
+	$appbuilder_config_url = $form_state['values']['fdw_dashboard_builder_config_url'];
+	$appbuilder_landing_url = $form_state['values']['fdw_dashboard_builder_landing_url'];
+	$appbuilder_logout_url = $form_state['values']['fdw_dashboard_builder_logout_url'];
+
+	//drupal_set_message('<pre>'. $appbuilder_enabled .'<br/>'.$appbuilder_config_url.'<br/>'.$appbuilder_landing_url.'<br/>'.$appbuilder_logout_url.'<br/>'.'</pre>');
+
+	variable_set('fdw_dashboard_builder_on_off', $appbuilder_enabled);
+	variable_set('fdw_dashboard_builder_config_url', $appbuilder_config_url);
+	variable_set('fdw_dashboard_builder_landing_url', $appbuilder_landing_url);
+	variable_set('fdw_dashboard_builder_logout_url', $appbuilder_logout_url);
+	variable_set('fdw_dashboard_docs_url', $form_state['values']['fdw_dashboard_docs_url']);
+
+}
+
+function flowdeveloper_send_missing_licensee_info_email($accountEmail )
+{
+	$emailSent = false;
+
+	if (isset($accountEmail))
+	{
+		$subject = 'Creator developer - User Account Issue';
+		$messageBody = 'The following account is missing the LicenseeID. Email:  ' . $accountEmail. "\r\n"."\r\n"
+			. 'This e-mail was sent to ' . FLOWDEVEL_FLOWSYSADMIN_EMAIL ."\r\n"."\r\n"
+			. 'Creator developer community Admin'. "\r\n"
+			. 'http://flow.imgtec.com/developers';
+
+
+		$encodedMail = 	mimemail(FLOWDEVEL_SENDER_EMAIL, FLOWDEVEL_FLOWSYSADMIN_EMAIL, $subject, $messageBody, true, array('X-Mailer' => 'Drupal'), $messageBody, null, true);
+		$emailSent = ($encodedMail['result'] == '1') ? true : false;
+	}
+
+	return $emailSent;
+}
+
+function flowdeveloper_version_details()
+{
+	$root = dirname($_SERVER['SCRIPT_FILENAME']);
+	$module = drupal_get_path('module', 'flowdeveloper');
+	$version = trim(file_get_contents("$root/$module/.version"));
+	$buildnum = trim(file_get_contents("$root/$module/.buildnum"));
+
+	return "Version: ".$version.".".$buildnum;
+}
+
+/**
+ * Implements of hook_jstemplates
+ */
+function flowdeveloper_jstemplates()
+{
+	$templates = array();
+
+	$templates[] = '<div id="email-update-warning-template" data-modalid="email-update-warning"  class="modal fade c-popup c-ate-modal-email-update-warning">'
+		. '	<div class="modal-dialog">'
+		. '		<div class="modal-content">'
+		. '			<div class="modal-header">'
+		. '				<button type="button" class="close c-ate-email-update-warning-cancel" data-dismiss="modal" aria-hidden="true">&times;</button>'
+		. '				<h4 class="modal-title">Note on changing your e-mail address</h4>'
+		. '			</div>'
+		. '			<div class="modal-body">'
+		. '				<p>If you changed your e-mail address,  you will be logged-out of the system and required to re-activate your Creator account. '
+		. '				A new account activation e-mail will be sent to your new e-mail inbox.</p>'
+		. '			</div>'
+		. '			<div class="modal-footer">'
+		. '				<button type="button" class="btn btn-primary c-ate-email-update-warning-continue-button c-continue-btn">Continue</button>'
+		. '				<button type="button" class="btn btn-default c-ate-email-update-warning-cancel-button" data-dismiss="modal">Cancel</button>'
+		. '			</div>'
+		. '		</div>'
+		. '	</div>'
+		. '</div>';
+
+	$templates[] = '<div id="device-delete-warning-template" data-modalid="device-delete-warning"  class="modal fade c-popup c-ate-modal-delete-devices-warning">'
+		. '	<div class="modal-dialog">'
+		. '		<div class="modal-content">'
+		. '			<div class="modal-header">'
+		. '				<button type="button" class="close c-ate-email-update-warning-cancel" data-dismiss="modal" aria-hidden="true">&times;</button>'
+		. '				<h4 class="modal-title">Delete devices</h4>'
+		. '			</div>'
+		. '			<div class="modal-body">'
+		. '				<p>Please confirm that you wish to delete the selected devices from your Creator account.</p>'
+		. '			</div>'
+		. '			<div class="modal-footer">'
+		. '				<button type="button" class="btn btn-dashboard-default c-ate-delete-device-warning-cancel-button" data-dismiss="modal">Cancel</button>'
+		. '				<button type="button" class="btn btn-danger c-ate-delete-device-warning-confirm-button c-continue-btn">Delete</button>'
+		. '			</div>'
+		. '		</div>'
+		. '	</div>'
+		. '</div>';
+		
+	$templates[] = '<div id="delete-single-device-warning-template" data-modalid="delete-single-device-warning"  class="modal fade c-popup c-ate-modal-delete-singledevice-warning">'
+				 . '	<div class="modal-dialog">'
+				 . '		<div class="modal-content">'
+				 . '			<div class="modal-header">'
+				 . '				<button type="button" class="close c-ate-email-update-warning-cancel" data-dismiss="modal" aria-hidden="true">&times;</button>'
+				 . '				<h4 class="modal-title">Delete device</h4>'
+				 . '			</div>'
+				 . '			<div class="modal-body">'
+				 . '				<p>Please confirm that you wish to delete this device from your Creator account.</p>'
+				 . '			</div>'
+				 . '			<div class="modal-footer">'
+				 . '				<button type="button" class="btn btn-dashboard-default c-ate-delete-device-warning-cancel-button c-cancel-btn" data-dismiss="modal">Cancel</button>'
+				 . '				<button type="button" class="btn btn-danger c-ate-delete-device-warning-confirm-button c-continue-btn">Delete</button>'
+				 . '			</div>'
+			 	 . '		</div>'
+				 . '	</div>'
+				 . '</div>';		
+		
+	$templates[] = '<div id="ajax-preloader-template" class="c-preloader">'
+				 . '	<img src="'. url(drupal_get_path('theme', 'highness').'/images/loader.gif') .'"/>'
+				 . '</div>';
+
+	$templates[] = '<div id="password-strength-container-template" class="cn-pass1-row-wrapper row">'
+				 . '	<div class="cn-confirm-password col-xs-4 col-sm-6"></div>'
+				 . '	<div class="cn-password-strength col-xs-5 col-sm-6 pull-left"></div>'
+				 . '</div>';
+
+	$templates[] = '<div id="ajax-refresh-preloader-template" class="c-preloader">'
+				 . '	<img src="'. url(drupal_get_path('theme', 'highness').'/images/ic-reload-preloader.svg') .'"/>'
+				 . '</div>';				 
+
+	return $templates;
+}
+
+/**
+ *
+ */
+function flowdeveloper_user_is_logged_in()
+{
+	global $user;
+	if (isset($user->uid)) 
+	{
+		//drupal_set_message('USER IS LOGGED-IN:: UID:: '. $user->uid);
+		drupal_set_message(t('You need to be signed-in to access that content.'));
+		return true;
+	}
+	else
+	{
+		drupal_goto('user/login');
+	}
+}

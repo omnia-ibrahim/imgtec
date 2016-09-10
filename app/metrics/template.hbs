@@ -1,0 +1,36 @@
+<div class="page-title">Metrics</div>
+
+<div class="mdl-tabs mdl-js-tabs mdl-js-ripple-effect">
+  <div class="mdl-tabs__tab-bar">
+      <a href="#item-one-panel" class="mdl-tabs__tab is-active">Item One</a>
+      <a href="#item-two-panel" class="mdl-tabs__tab">Item Two</a>
+	  <a href="#item-three-panel" class="mdl-tabs__tab">Item Three</a>
+      <hr/>
+  </div>
+  
+  <div class="flex"></div>
+  
+  <div class="mdl-tabs__panel is-active" id="item-one-panel">
+		<div class="mdl-grid metrics-grid">
+			{{#each model as |metric|}}
+				<div class="mdl-cell mdl-cell--6-col mdl-cell--12-col-tablet">
+					{{#metric-card name=metric.Name}}
+						{{metric.Value}}
+					{{/metric-card}}
+				</div>
+			{{/each}}
+		</div>
+  </div>
+  
+  
+  	<div class="mdl-tabs__panel" id="item-two-panel">
+		  
+	</div>
+	
+	<div class="mdl-tabs__panel" id="item-three-panel">
+		  
+	</div>
+	
+</div>
+
+{{outlet}}

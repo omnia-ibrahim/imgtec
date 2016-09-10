@@ -1,0 +1,42 @@
+.mdl-dialog {
+    padding:0;
+    max-width:682px;
+    height:540px;
+    width: 75%;
+    overflow-y: auto;
+
+    .mdl-dialog__header {
+        height:65px;
+        width:100%;
+        background-color: #F7F7F7;
+        
+        .mdl-dialog__title {
+            text-transform: uppercase;
+            font-size: 20px;
+            line-height: 1.6;
+            color: $page-title-color;
+        }
+    }
+    
+    .mdl-dialog__content {
+        padding-top:5px;
+    }
+    
+    .mdl-dialog__form {
+        padding: 15px;
+        .mdl-textfield {
+            width:100%;
+        }
+    }
+    
+    .mdl-dialog__actions {
+        position: relative;
+        bottom:15px;
+        right:15px;
+    }
+}
+@media screen and (max-width: 400px) {
+    .mdl-dialog__title {
+        font-size:14px;
+    }
+}

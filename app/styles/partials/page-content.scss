@@ -1,0 +1,63 @@
+$tabs-border-color: #DDDDDD;
+$active-tab-border-color: #59a59c;
+$page-content-bg: #FFF;
+$page-title-color: #4a4a4a;
+
+
+.page-back-bar {
+    position: absolute;
+    left:0;
+    width: 100%;
+    height: 45px;
+    background-color: #EFF6F5;
+    color: #59A59C;
+    margin-bottom: 30px;
+    
+    i {
+        margin-top:15px;
+        margin-left: 10px;
+    }
+    
+    .text {
+        position: relative;
+        top: -5px;
+        margin-left: 10px;
+        font-size:18px;
+        text-transform: uppercase;        
+    }
+}
+
+.page-title {
+    text-transform: uppercase;
+    font-size: 20px;
+    line-height: 1.6;
+    color: $page-title-color;
+    margin: 10px 0 0 0;
+    
+    .page-search {
+        margin-top:-15px;
+    }
+    
+    
+    .page-action-button {
+        button {
+            
+        }
+    }
+}
+
+.page-description {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+    
+    .pull-right {
+        color: #59a59c;
+        i {
+            position: absolute;
+            margin-left: -30px;
+            margin-top: -4px;
+        }
+    }
+}
+

@@ -1,0 +1,58 @@
+<div class="page-title">Clients
+	<span class="page-search pull-right">
+		{{#page-search}}{{/page-search}}
+	</span>
+</div>
+
+<div class="table-wrapper">
+	<div class="table-header">
+		<div class="title">Client List</div>
+		<div class="description">Some random description that no one will read</div>
+	</div>
+	<table class="mdl-data-table mdl-data-table--selectable mdl-js-data-table mdl-shadow--2dp">
+	<thead>
+		<tr>
+			<th class="device-header">Device</th>
+			<th class="description-header">Description</th>
+			<th class="update-header">Latest event</th>
+			<th class="refresh-header"></th>
+			<th class="menu-header"></th>
+		</tr>
+	</thead>
+	<tbody>
+        {{#each model as |client|}}
+			<tr class="client-row">
+                
+				<td>
+					{{#link-to 'client' client}} 
+						{{client.name}}
+					{{/link-to}}
+				</td>
+				
+                <td class="description-column">Description about the client can come here</td>
+                <td>Unknown</td>
+                <td class="refresh-column">
+                    <button id="demo-menu-lower-left-1-{{client.name}}" class="mdl-button mdl-js-button mdl-button--icon">
+                        <i class="material-icons">refresh</i>
+                    </button>
+                </td>
+                <td class="menu-column">
+                    <button id="demo-menu-lower-left-1-{{client.name}}-a" class="mdl-button mdl-js-button mdl-button--icon">
+                        <i class="material-icons">more_vert</i>
+                    </button>
+                    <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect" for="demo-menu-lower-left-1-{{client.name}}-a">
+                        <li class="mdl-menu__item">Some Action</li>
+                        <li class="mdl-menu__item mdl-menu__item--full-bleed-divider">Another Action</li>
+                        <li disabled class="mdl-menu__item">Disabled Action</li>
+                        <li class="mdl-menu__item">Yet Another Action</li>
+                    </ul>
+                </td>
+            </tr>
+        {{/each}}
+	</tbody>
+	</table>
+</div>
+
+
+
+{{outlet}}

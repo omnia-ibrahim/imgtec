@@ -1,0 +1,13 @@
+; $Id$
+name = FlowCloud Developer
+description =  Provides the core functionality for the flow developer web site
+core = 7.x
+package = FlowCloud Developer
+
+scripts[] = json2.js
+scripts[] = jquery.blockUI.js
+scripts[] = jquery.debouncedresize.js
+scripts[] = flowdeveloper.js
+
+dependencies[] = "flowautho"
+dependencies[] = "flowuser"

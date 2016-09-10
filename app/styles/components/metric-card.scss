@@ -1,0 +1,56 @@
+$card-height: 295px;
+$card-width: auto;
+
+
+.creator-card-wide {
+    
+    width: $card-width;
+    height: $card-height;
+    
+    .mdl-card__title {
+        color: #000;
+        background-color: #f7f7f7;
+        height: 65px;
+          
+        .mdl-card__title-text {
+            font-size: 17px;
+            line-height: 1.4;
+            color: #000000;
+            clear:both; display:block;
+            font-weight:500;
+        }
+    }
+    .mdl-card__description {
+        color: #000;
+        background-color: #f7f7f7;
+        line-height: normal;
+        padding: 16px;
+        padding-top: 0;
+        perspective-origin: 165px 56px;
+        transform-origin: 165px 56px;
+        box-sizing: border-box;
+        margin-top: -10px;
+        
+         .mdl-card__description-text {
+            font-size: 14px;
+            line-height: 1.4;
+            color: rgba(0, 0, 0, 0.54);
+            clear:both; display:block;
+        }
+    }
+    
+    .mdl-card__value {
+        text-align: center;
+        margin-left:15px;
+        font-size:35px;
+        height: $card-height/2;
+        line-height: $card-height/2;
+    }
+    
+     .mdl-card__menu {
+        color: #fff;
+        i {
+            color: #000;
+        }
+    }  
+}

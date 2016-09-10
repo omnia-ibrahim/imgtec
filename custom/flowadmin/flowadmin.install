@@ -1,0 +1,24 @@
+<?php
+
+/**
+ * Implements hook_install()
+ * 
+ * hook_schema() will be fired before this hook so no need to explicitely 
+ * ask drupal to install the scheme
+ */
+function flowadmin_install()
+{
+	/**
+	 * Ensure that the flowautho module initializes before the flowadmin module
+	 * all shared functions will be availble to flowadmin 
+	 */
+	$resultset = db_query("SELECT weight FROM {system} WHERE name = 'flowautho' AND type = 'module'");
+	$recordSet = $resultset->fetchAssoc();
+	$flowauthoWeight = $recordSet['weight'];
+	
+	$updateQuery = db_update('system')
+					->fields(array('weight' => ($flowauthoWeight + 10)))
+					->condition('name', 'flowadmin')
+					->condition('type', 'module')
+					->execute();
+}

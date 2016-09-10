@@ -1,0 +1,89 @@
+<div class="page-title">Access Keys
+	<span class="pull-right">
+		<!-- Raised button with ripple -->
+        <button {{action 'generate_access_key'}} class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
+            Generate Key +
+        </button>
+	</span>
+</div>
+
+<div class="page-description">
+    Access keys define how you access our API.
+    <span class="pull-right">
+        <i class="material-icons">info_outline</i> Learn how to develop clients
+    </span>
+</div>
+
+<div class="table-wrapper">
+    <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp access-key-table">
+    <thead>
+        <tr>
+            <th class="mdl-data-table__cell--non-numeric">Key Name</th>
+            <th>Access Key</th>
+            <th class="date-header">Created At</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="mdl-data-table__cell--non-numeric">Creative_Client</td>
+            <td class="access-key-column">
+                <span id="access-key-1">8343eb92-1433-4d04-923f-2d82ee8db25e92ee8db25e</span>
+                <button {{action 'copy_access_key' '1'}} class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect copy-button">
+                    <i class="material-icons">content_copy</i>
+                    COPY
+                </button>
+            </td>
+            <td class="date-column">May 19, 2016 11:35 AM</td>
+            <td><i class="material-icons">delete</i></td>
+        </tr>
+        <tr>
+            <td class="mdl-data-table__cell--non-numeric">IoT_Client2</td>
+            <td class="access-key-column">
+                <span id="access-key-2">8343eb92-1433-4d04-923f-2d82ee8db25e92ee8db25e</span>
+                <button {{action 'copy_access_key' '2'}} class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect copy-button">
+                    <i class="material-icons">content_copy</i>
+                    COPY
+                </button>
+            </td>
+            <td class="date-column">May 19, 2016 11:35 AM</td>
+            <td><i class="material-icons">delete</i></td>
+        </tr>
+    </tbody>
+    </table>
+</div>
+
+<dialog class="mdl-dialog">
+    <div class="mdl-dialog__header">
+        <h4 class="mdl-dialog__title">Generate Access Key</h4>
+    </div>
+    <div class="mdl-dialog__content">
+      <p> 
+          Some description about how to generate an access key and the next step to take
+      </p>
+    </div>
+    <div class="mdl-dialog__form">
+        <div class="mdl-grid">
+            <div class="mdl-cell mdl-cell--12-col">
+                <form action="#">
+                <div class="mdl-textfield mdl-js-textfield">
+                    <input class="mdl-textfield__input" type="text"  autocomplete="disabled">
+                    <label class="mdl-textfield__label" >Key Name</label>
+                </div>
+                </form>
+            </div>
+            <div class="mdl-cell mdl-cell--12-col">
+                <div class="mdl-textfield mdl-js-textfield">
+                    <textarea class="mdl-textfield__input" type="text" rows= "7" id="sample5" ></textarea>
+                    <label class="mdl-textfield__label" for="sample5">Text lines...</label>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="mdl-dialog__actions">
+      <button {{action 'close_modal'}} type="button" class="mdl-button">Ok</button>
+      <button {{action 'close_modal'}} type="button" class="mdl-button">Cancel</button>
+    </div>
+  </dialog>
+
+{{outlet}}

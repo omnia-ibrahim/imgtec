@@ -1,0 +1,7 @@
+name = FlowCloud Developer config module
+description = Contains all the configurations of the CMS.
+core = 7.x
+
+package = FlowCloud Developer
+
+dependencies[] = "flowdeveloper"

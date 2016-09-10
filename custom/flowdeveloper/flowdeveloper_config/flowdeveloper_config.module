@@ -1,0 +1,477 @@
+<?php
+
+/**
+ * Implementation of hook_menu
+ */
+function flowdeveloper_config_menu() {
+  $items = array();  
+  $items['node/%node/revisions/%vid/revision_workflow'] = array(
+    'title' => 'Revision workflow',
+    'description' => 'Leave a comment / change workflow state',
+    'load arguments' => array(3),
+    'page callback' => 'flowdeveloper_config_workflow_revision_support',
+    'page arguments' => array(1),
+    'access callback' => '_revisioning_access_node_revision',
+    'access arguments' => array('view revision list', 1),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => -1,
+  );
+
+  $items['hardware_view'] = array(
+    'title' => 'Hardware View',
+    'page callback' => 'flowdeveloper_config_hardware_rendered_view',
+    'type' => MENU_LOCAL_TASK,
+    'access callback' => 'user_access',
+    'access arguments' => array('access content'),
+    'weight' => -1,
+  );
+
+  $items['projects_view'] = array(
+    'title' => 'Projects View',
+    'page callback' => 'flowdeveloper_config_projects_rendered_view',
+    'type' => MENU_LOCAL_TASK,
+    'access callback' => 'user_access',
+    'access arguments' => array('access content'),
+    'weight' => -1,
+  );
+
+  return $items;
+}
+
+/**
+ *  Implementation of hook_form_alter
+ */ 
+function flowdeveloper_config_form_alter(&$form, &$form_state, $form_id) {
+  // Check if its a workflow tranisition form
+  if (preg_match ( '/workflow_transition_form_node_([0-9]+)_([0-9]+)/', $form_id, $matches )) {
+    // Disable chaning workflow state if its published
+    if ($form['workflow']['workflow_entity']['#value']->is_current == 1 && $form['workflow']['workflow_sid']['#default_value'] == 6) {
+      $form['workflow']['workflow_sid']['#disabled'] = TRUE;
+    }
+    $form['#submit'] = array('flowdeveloper_config_transition_submit');
+    $form['workflow']['actions']['submit']['#submit'] = array('flowdeveloper_config_transition_submit');
+  }
+
+  // Check if editor is editing node with workflow state published, change default value to be 'draft'
+  if (isset($form['type']) && isset($form['#node']) && $form['type']['#value'] . '_node_form' == $form_id) {     
+    if (isset($form['#node']->is_current) && isset($form['#node']->field_workflow_states['und'])) {
+      if ($form['#node']->is_current && $form['#node']->field_workflow_states['und'][0]['value'] == 6)  {
+        $form["field_workflow_states"]['und'][0]['workflow']['workflow_sid']['#default_value'] = 2;
+        // Unset publish and unpublish options
+        unset($form["field_workflow_states"]['und'][0]['workflow']['workflow_sid']['#options'][6]);
+       //unset($form["field_workflow_states"]['und'][0]['workflow']['workflow_sid']['#options'][7]);
+      }
+    }
+  }
+  // Check if the form for adding a file or editing a file to hide the title and alt fields
+  if ($form_id == 'file_entity_add_upload' || $form_id == 'file_entity_edit') {
+    unset ($form['field_file_image_alt_text']);
+    unset ($form['field_file_image_title_text']);
+  }
+}
+
+/**
+ * alter the normal transition submit to prevent making the edited node the current revision
+ */
+function flowdeveloper_config_transition_submit($form, &$form_state) {
+
+  global $user;
+
+  $field = $form_state['values']['workflow_field'];
+  $instance = $form_state['values']['workflow_instance'];
+  $entity_type = $form_state['values']['workflow_entity_type'];
+  $entity = $form_state['values']['workflow_entity'];
+  $field_name = $form_state['values']['workflow_field']['field_name'];
+
+  $old_sid = workflow_node_previous_state($entity, $entity_type, $field_name);
+
+  if (empty($form_state['values']['workflow_comment']) && $form_state['values']['workflow_sid'] == $old_sid) {
+
+    // Do nothing
+
+  } else {
+    // update workflow_node_history with the new state and comment
+    db_insert('workflow_node_history')
+    ->fields(array(
+      'entity_type' => $entity_type,
+      'nid' => $entity->nid,       
+      'revision_id' => $entity->vid,
+      'field_name' => $form_state['values']['workflow_field']['field_name'],
+      'language' => 'und',
+      'old_sid' => $old_sid,
+      'uid' => $user->uid,
+      'sid' => $form_state['values']['workflow_sid'],
+      'comment' => $form_state['values']['workflow_comment'],
+      'stamp' => time(),
+    ))->execute();
+
+    $node = node_load($entity->nid, arg(3)); // where 1 is the nid you want to change 
+
+    // Change field value
+    $node-> field_workflow_states['und'][0]['value'] = $form_state['values']['workflow_sid'];
+
+    // Get the numeric id of your field by passing field name
+    $info = field_info_field('field_workflow_states');
+    $fields = array($info['id']);
+
+    // Execute the storage function
+    field_sql_storage_field_storage_write('node', $node, 'update', $fields);
+    
+    // Check if state is publish: publish the node and make it current
+    if ($form_state['values']['workflow_sid'] == 6) {
+      _revisioning_publish_revision($node);
+    }
+    // Check if the state is unpublish: unbulish the current revision
+    if ($form_state['values']['workflow_sid'] == 7) {
+      _revisioning_unpublish_node ($node);
+    }
+
+    // Clear field cache
+    cache_clear_all("field:node:$node->nid", 'cache_field');
+  }
+  // Add the new workflow state to the entity
+ // $entity-> field_workflow_states['und'][0]['value'] = $form_state['values']['workflow_sid'];
+  
+ /* // Save the workflow fields to the node
+  $node = node_load($entity->nid, arg(3)); // where 1 is the nid you want to change 
+  $update_node = new stdClass();
+  $update_node->nid = $node->nid;
+  $update_node->vid = arg(3);//$node->vid;
+  $update_node->type = $node->type;
+  $update_node->title = $node->title;
+ 
+  $update_node->uid = $user->uid;
+
+
+  $update_node-> field_workflow_states['und'][0]['value'] = $form_state['values']['workflow_sid'];
+
+  field_attach_update('node', $update_node);
+
+ // entity_get_controller('node')->resetCache(array($entity-> nid));
+  drupal_goto('node/' . $entity->nid . '/revisions/' . arg(3) . '/revision_workflow');
+*/
+  return $form_state['values']['workflow_sid'];
+}
+
+/**
+ *  Implementation of hook_node_presave
+ */
+function flowdeveloper_config_node_presave($node) {
+
+  // Check if the current node and the workflow status is unpublished, unpublish th enode and don't create a new revision
+  if (isset($node->is_current) && isset($node->field_workflow_states['und'][0]['workflow'])){
+    if ($node->is_current && $node->field_workflow_states['und'][0]['workflow']['workflow_sid'] == 7) {
+      $node->revision = 0;
+  $function = "field_attach_update";
+    $function('node', $node); 
+     _revisioning_unpublish_node ($node);
+    }
+  }
+  // Check if the workflow status id is published, publish this revision and make it current
+  if (isset($node->field_workflow_states['und'][0]['workflow'])) {
+    if($node->field_workflow_states['und'][0]['workflow']['workflow_sid'] == 6) {
+
+    $function = "field_attach_update";
+    $function('node', $node);
+    $node = node_load($node->nid, $node->vid);
+    _revisioning_publish_revision($node);
+    $node->status = NODE_PUBLISHED;
+   
+
+/*
+
+   db_update('node_revision')
+    ->fields(array('status' => 1 ))
+    ->condition('vid', $node->vid)
+    ->execute();
+
+
+*/
+ // Save fields.
+ 
+    drupal_goto('node/' . $node->nid );
+    }
+  } 
+  // Check if the node is not new node and new revision is created for it, then change the workflow state from published to draft
+  if (isset($node->revision) && isset($node->original->field_workflow_states['und'])) {
+    if($node->is_new == 0 && $node->revision == 1 && $node->original->field_workflow_states['und'][0]['value'] == 6 && $node->field_workflow_states['und'][0]['workflow']['workflow_sid'] == 6 &&  $node->original->vid == $node->vid ) {
+     $node->field_workflow_states['und'][0]['workflow']['workflow_entity']-> field_workflow_states['und'][0]['value'] = 2;
+     $node->field_workflow_states['und'][0]['workflow']['workflow_sid'] = 2;
+     $node->original->field_workflow_states['und'][0]['value'] = 2;
+    } 
+  } 
+}
+
+/**
+ * Implementation of hook_menu_alter
+ */
+function flowdeveloper_config_menu_alter(&$items) {
+
+  // Disable the default workflow tab in node pages
+  unset($items['node/%node/workflow']);
+  $items['node/%node/workflow']['access_callback'] =  false;
+}
+
+/**
+ * Helper function to return the rendered content of the Hardware view based on the passed arg
+ */
+function flowdeveloper_config_hardware_rendered_view() {
+  
+  $args = arg(1);
+  if (empty($args)) {
+    $args = 'all';
+  }
+  return views_embed_view('hardware_page', 'page_1', $args);
+}
+
+/**
+ * Helper function to return the rendered content of the Projects view based on the passed arg
+ */
+function flowdeveloper_config_projects_rendered_view() {
+  
+  $args = arg(1);
+  if (empty($args)) {
+    $args = 'all';
+  }
+print(views_embed_view('projects', 'page_1', $args));
+ // return views_embed_view('projects', 'page_1', $args);
+}
+
+/**
+ * Page callback for the workflow revision menu tab
+ * Parameters: $entity (Node object)
+ */
+function flowdeveloper_config_workflow_revision_support($entity =  NULL) {
+
+  $entity_type = 'node';
+  drupal_set_title(entity_label($entity_type, $entity));
+
+  $form = array();
+  $field_name = NULL;
+  $workflow = NULL;
+
+  // Figure out the $entity's bundle and id.
+  list($entity_id, , $entity_bundle) = entity_extract_ids($entity_type, $entity);
+  $entity_id = entity_id($entity_type, $entity);
+
+   $entity = node_load($entity_id, arg(3));
+  // Get the current sid. $field_name is updated with relevant value.
+  $current_sid = workflow_node_current_state($entity, $entity_type, $field_name);
+
+
+  $current_state = workflow_state_load_single($current_sid);
+  $workflow = $current_state->getWorkflow();
+
+  // Show the current state and the Workflow form to allow state changing.
+  // N.B. This part is replicated in hook_node_view, workflow_tab_page, workflow_vbo, transition_edit.
+  // @todo: support multiple workflows per entity.
+  // For workflow_tab_page with multiple workflows, use a separate view. See [#2217291].
+  $field = _workflow_info_field($field_name, $workflow);
+  $field_id = $field['id'];
+  $instance = field_info_instance($entity_type, $field_name, $entity_bundle);
+  if (!$field_id) {
+    // This is a Workflow Node workflow. Set widget options as in v7.x-1.2
+    $field['settings']['widget']['comment'] = isset($workflow->options['comment_log_tab']) ? $workflow->options['comment_log_tab'] : 1; // vs. ['comment_log_node'];
+    $field['settings']['widget']['current_status'] = TRUE;
+  }
+
+  $form_id = implode('_', array('workflow_transition_form', $entity_type, $entity_id, $field_id));
+  $form += drupal_get_form($form_id, $field, $instance, $entity_type, $entity);
+
+  $output = drupal_render($form);
+
+  // Show the history table.
+  $rows = array();
+  $current_themed = FALSE;
+  $limit = variable_get('workflow_states_per_page', 20);
+  
+  // Query the history table for the workflow
+  $query = db_select('workflow_node_history', 'h');
+  $query->condition('h.entity_type', $entity_type);
+  if ($entity_id) {
+    $query->condition('h.nid', $entity_id);
+    $query->condition('h.revision_id', arg(3));
+  }
+  if ($field_name !== NULL) {
+    // If we do not know/care for the field_name, fetch all history.
+    // E.g., in workflow.tokens.
+    $query->condition('h.field_name', $field_name);
+  }
+  $query->fields('h');
+  // The timestamp is only granular to the second; on a busy site, we need the id.
+  // $query->orderBy('h.stamp', 'DESC');
+  $query->orderBy('h.hid', 'DESC');
+  if ($limit) {
+    $query->range(0, $limit);
+  }
+  $result = $query->execute()->fetchAll(PDO::FETCH_CLASS, 'WorkflowTransition');
+
+  // Get the history for any field_name.
+  foreach ($result as $history) {
+    $old_state_name = $new_state_name = '';
+    $label = $name = '';
+    $new_state = $history->getNewState();
+    if ($new_state) {
+      $name = $new_state->getName();
+      $label = check_plain(t($new_state->label()));
+    }
+    if (!$new_state) {
+      // This is an invalid/deleted state.
+      $old_state_name = $label;
+    }
+    elseif ($history->new_sid == $current_sid && $new_state->isActive() && !$current_themed) {
+      // Theme the current state differently so it stands out.
+      $ss_states = array(
+        'state_name' => $label,
+        'state_system_name' => $name,
+        'sid' => $history->new_sid,
+      );
+      $new_state_name = $ss_states['state_name'];
+ 
+      // Make a note that we have themed the current state; other times in the history
+      // of this node where the node was in this state do not need to be specially themed.
+      $current_themed = TRUE;
+    }
+    elseif (!$new_state->isActive()) {
+      // The state has been deleted, but we include it in the history.
+      $new_state_name = theme('workflow_deleted_state', array(
+        'state_name' => $label,
+        'state_system_name' => $name,
+        'sid' => $history->new_sid,
+      ));
+      $footer_needed = TRUE;
+    }
+    else {
+      // Regular state.
+      $new_state_name = $label;
+    }
+    unset($new_state); // Not needed anymore.
+
+    $label = $name = '*';
+
+    // Query the previous sid (NOTE: don't use the one saved as old_state in history, because it doesn't take revisions into consideration)  
+    $result_2 = db_query("SELECT sid FROM workflow_node_history WHERE nid = :nid and revision_id = :revision_id and hid < :hid ORDER BY hid DESC Limit 0,1", array(
+      ':nid' => $entity_id,
+      'revision_id' => arg(3),
+      ':hid' => $history->hid,
+    ));
+    $prev_state_id = '';
+    while ($old_sidd = $result_2->fetchAssoc()) {
+      $prev_state_id = $old_sidd['sid']; 
+    }
+    if ($prev_state_id) {
+      $old_state = workflow_state_load_single($prev_state_id);//$history->getOldState(); 
+    } else { 
+      $old_state = $history->getOldState();
+    }
+    if ($old_state) {
+      $name = $old_state->getName();
+      $label = check_plain(t($old_state->label()));
+    }
+    if (!$old_state) {
+      // This is an invalid/deleted state.
+      $old_state_name = $label;
+    }
+    elseif (!$old_state->isActive()) {
+      $old_state_name = theme('workflow_deleted_state', array(
+        'state_name' => $label,
+        'state_system_name' => $name,
+        'sid' => $history->old_sid,
+      ));
+      $footer_needed = TRUE;
+    }
+    else {
+      // Regular state.
+      $old_state_name = $label;
+    }
+    unset($old_state); // Not needed anymore.
+
+    $variables = array(
+      'transition' => $history, // @todo D8: pass this WorkflowTransition as only variable. It contains everything.
+      'extra' => '',
+      'history' => $history,  // @todo D8: remove, as this is the same as 'transition'.
+      'old_sid' => $history->old_sid, // @todo D8: remove this redundant property.
+      'sid' => $history->new_sid, // @todo D8: remove this redundant property.
+      'uid' => $history->uid, // @todo D8: remove this redundant property.
+      'old_state_name' => $old_state_name,
+      'state_name' => $new_state_name,
+    );
+    // Allow other modules to modify the row.
+    // $todo D8: pass only a $transition object.
+    drupal_alter('workflow_history', $variables);
+    $row = array();
+    $old_state_name = $variables['old_state_name'];
+    $state_name = $variables['state_name'];
+    $transition = $variables['transition'];
+    $row = array(
+      'data' => array(
+        array('data' => format_date($transition->stamp), 'class' => array('timestamp')),
+        array('data' => $transition->field_name, 'class' => array('field-name')),
+        array('data' => $old_state_name, 'class' => array('previous-state-name')),
+        array('data' => $state_name, 'class' => array('state-name')),
+        array('data' => theme('username', array('account' => $transition->getUser())), 'class' => array('user-name')),
+        array('data' => filter_xss($transition->comment), 'class' => array('log-comment')),
+        $variables['extra'],
+      ),
+      'class' => array('workflow_history_row'),
+    );
+    $rows[] = $row;
+  }
+
+  // Mark the first and last rows.
+  $rows[0]['class'][] = 'first';
+  $last = count($rows) - 1;
+  $rows[$last]['class'][] = 'last';
+
+  $header = array(t('Date'), t('Field name'), t('Old State'), t('New State'), t('By'), t('Comment'));
+  $header[] = array('data' => t('Operations'));
+
+  // Only display the table if there's anything in it.
+  if ($rows) {
+    $variables = array(
+      'header' => $header,
+      'rows' => $rows,
+      'footer' => !empty($footer_needed),
+      'entity' => $entity,
+      'entity_type' => $entity_type,
+    );
+
+    $header = $variables['header'];
+    $rows = $variables['rows'];
+    $footer = $variables['footer'];
+    $entity = $variables['entity'];
+    $entity_type = $variables['entity_type'];
+    $column_field_name = 1;
+    $column_operations = 6;
+
+    // Remove the Operations column if none are added.
+    $empty = TRUE;
+    foreach ($rows as $row) {
+      $empty &= empty($row['data'][$column_operations]);
+    }
+    if ($empty) {
+      foreach ($rows as &$row) {
+        unset($row['data'][$column_operations]);
+        unset($header[$column_operations]);
+      }
+    }
+
+    // Remove the Field name column if only 1 workflow_field exists.
+    if (count(_workflow_info_fields($entity, $entity_type)) < 2) {
+      foreach ($rows as &$row) {
+        unset($row['data'][$column_field_name]);
+        unset($header[$column_field_name]);
+      }
+    }
+
+    $outputt = theme('table', array('header' => $header, 'rows' => $rows, 'caption' => t('Workflow History')));
+    if ($footer) {
+      $outputt .= '*' . ' ' . t('State is no longer available.');
+    }
+    $output .= $outputt;
+    $output .= theme('pager', array('tags' => $limit));
+  }
+  return $output;
+}
+
+

@@ -1,0 +1,308 @@
+<?php 
+
+define('FDW_DT_VOCAB_VAR_NAME', 'flowdeveloper_devicetype_vocabulary_machinename');
+
+/**
+ * @file
+ * 
+ */
+
+/**
+ * Implements hook_schema()
+ */
+function flowdeveloper_schema()
+{
+	$schema = array();
+	
+	$schema['flowdeveloper_licensee'] = array(
+	  'description' => t('A FlowCloud licensee'),
+	  'fields' => array(
+	    'licensee_id' => array(
+	      'description' => t('A FlowCloud designated licensee identifier'),
+	      'type' => 'int',
+	      'unsigned' => TRUE,
+	      'not null' => TRUE,
+	    ),
+	    'licensee_name' => array(
+	      'description' => t('Licensee name'),
+	      'type' => 'varchar',
+	      'length' => '50',
+	      'not null' => FALSE,
+	    ),
+	    'oauth_key' => array(
+	      'description' => t('The default authorization key for the licensee'),
+	      'type' => 'varchar',
+	      'length' => '50',
+	      'not null' => FALSE,
+	    ),
+	    'oauth_secret' => array(
+	      'description' => t('The default secret to go with the authorization key'),
+	      'type' => 'varchar',
+	      'length' => '50',
+	      'not null' => FALSE,
+	    ),
+	    'licensee_admin' => array(
+	      'description' => t('The drupal user id of the licensee admin'),
+	      'type' => 'int',
+	      'not null' => FALSE,
+	    ),
+	    'visibility' => array(
+	      'description' => t('Can anyone register with this licensee? or registration is only possible by invite'),
+	      'type' => 'int',
+	      'size' => 'tiny',
+	      'not null' => TRUE,
+	      'default' => 0,
+	    ),
+	  ),
+	  'primary key' => array('licensee_id'),
+	);
+	
+	return $schema;
+	
+}
+
+/**
+ * Implements hook_install()
+ * 
+ * hook_schema() will be fired before this hook so no need to explicitely 
+ * ask drupal to install the scheme
+ */
+function flowdeveloper_install()
+{
+	/**
+	 * Ensure that the flowautho module initializes before the flowdeveloper module
+	 * so that the web service client will be ready to execute requests and manage sessions 
+	 */
+	$resultset = db_query("SELECT weight FROM {system} WHERE name = 'flowautho' AND type = 'module'");
+	$recordSet = $resultset->fetchAssoc();
+	$flowauthoWeight = $recordSet['weight'];
+	
+	$updateQuery = db_update('system')
+					->fields(array('weight' => ($flowauthoWeight + 1)))
+					->condition('name','flowdeveloper')
+					->condition('type', 'module')
+					->execute();
+				
+	
+	//db_query("UPDATE {system} SET weight = %d WHERE name = 'flowdeveloper' AND type = 'module'", ($flowauthoWeight + 1));	
+	
+	/**
+	 * Ensure that drupal does not send out email validation email on user registration
+	 * This is the actual variable that determines wether drupal will send out this email or not.
+	 * see _user_mail_notify() function in the user.module  
+	 */
+	variable_set('user_mail_register_no_approval_required_notify', false);	
+    // Run the update functions
+   flowdeveloper_update_7001();
+   flowdeveloper_update_7002();
+   flowdeveloper_update_7003();
+}
+
+/**
+ * Implements hook_uninstall()
+ * 
+ * All tables created from within hook_schema() will be automatically removed
+ * Only variables set by the module should be removed 
+ */
+function flowdeveloper_uninstall()
+{
+	variable_set('user_mail_register_no_approval_required_notify', true);
+	$vocab = taxonomy_vocabulary_machine_name_load(variable_get(FDW_DT_VOCAB_VAR_NAME));
+  	taxonomy_vocabulary_delete($vocab->vid);
+  	variable_del(FDW_DT_VOCAB_VAR_NAME);
+  	
+}
+
+/**
+ * A database schema update the the flowdeveloper module
+ * 
+ * This update creates a vocabulary and a default taxonomy 
+ */
+function flowdeveloper_update_7001()
+{
+	drupal_load('module', 'taxonomy');
+
+	variable_set(FDW_DT_VOCAB_VAR_NAME, 'flowdeveloper_device_type_vocabulary');
+	$newVocab = null;
+	$vocab = new stdClass();
+	$vocab->name = 'Flowdeveloper Device Type Vocabulary';
+	$vocab->machine_name = variable_get(FDW_DT_VOCAB_VAR_NAME);
+	$vocab->description = 'Used to provide device registration instructions based on device type';
+	taxonomy_vocabulary_save($vocab);
+	
+	if (isset($vocab->vid)) 
+	{
+		$defaultInstruction = '<ol>'
+							. '	<li>Open the website hosted by the device you wish to register.</li>'
+							. '	<li>Modify the default name if you want to call your device something more memorable.</li>'
+							. '	<li>Enter the above code into the "Registration code" field.</li>'
+							. '	<li>Select the "Register" button to use the code to register your device with Creator.</li>'
+							. '</ol>'; 
+		$defaultTerm = new stdClass();
+		$defaultTerm->vid = $vocab->vid;
+		$defaultTerm->name = 'Default';
+		$defaultTerm->description = $defaultInstruction; 
+		taxonomy_term_save($defaultTerm);
+	}
+	else
+	{
+		watchdog('error', 'Failed to create device type vocabulary required to display device registration instructions');
+	}
+}
+
+/**
+ *
+ * This update is to create user roles 
+ */
+function flowdeveloper_update_7002() {
+  
+  // Create drupal_users roles to bypass Creator authenticate
+  $role = new stdClass();
+  $role->name = 'Drupal Users';
+  user_role_save($role);
+  $drupal_role = user_role_load_by_name('Drupal Users');
+  variable_set('drupal_users_role_rid', $drupal_role->rid);
+
+}
+
+/**
+ * Update function to create footer links as menu items
+ */
+function flowdeveloper_update_7003() {
+  $menus = array(
+    array(
+      'menu_name' => 'footer-menu-1',
+      'title' => 'Documentation',
+
+    ),
+    array(
+     'menu_name' => 'footer-menu-2',
+      'title' => 'SDKs',
+
+    ),
+    array(
+      'menu_name' => 'footer-menu-3',
+      'title' => 'Help',
+
+    ),
+  ); 
+
+  $links = array(
+    array(
+      array(
+        'link_title' => 'APIs',
+        'link_path' => 'http://flow.imgtec.com/developers/docs/apis',
+        'menu_name' => 'footer-menu-1',
+        'weight' => 0,
+        'expanded' => 0,
+      ),
+      array(
+        'link_title' => 'Howtos',
+        'link_path' => 'http://flow.imgtec.com/developers/docs/howtos',
+        'menu_name' => 'footer-menu-1',
+        'weight' => 1,
+        'expanded' => 0,
+      ),
+    ),
+    array(
+      array(
+        'link_title' => 'Embedded',
+        'link_path' => 'http://flow.imgtec.com/developers/develop/embedded',
+        'menu_name' => 'footer-menu-2',
+        'weight' => 0,
+        'expanded' => 0,
+      ),
+      array(
+        'link_title' => 'Mobile',
+        'link_path' => 'http://flow.imgtec.com/developers/develop/mobile',
+        'menu_name' => 'footer-menu-2',
+        'weight' => 1,
+        'expanded' => 0,
+      ),
+    ),
+    array(
+      array(
+        'link_title' => 'Terms and conditions',
+        'link_path' => 'http://flow.imgtec.com/developers/terms-and-conditions',
+        'menu_name' => 'footer-menu-3',
+        'weight' => 0,
+        'expanded' => 0,
+      ),
+    ),
+  );
+
+  // Save menu group into menu_custom table
+  foreach ($menus as $menu) {
+    // Look the table first if the data does exist
+    $exists = db_query("SELECT title FROM {menu_custom} WHERE menu_name=:menu_name", array(':menu_name' => $menu['menu_name']))->fetchField();
+    // Save the record if the data does not exist
+    if (!$exists) {
+      menu_save($menu);
+    }
+  }
+
+  $item = ''; 
+  foreach ($links as $layer1) {
+    foreach ($layer1 as $link) {
+      // Build an array of menu link 
+      $item = array(
+        'link_path' => $link['link_path'],
+        'link_title' => $link['link_title'],
+        'menu_name' => $link['menu_name'],
+        'weight' => $link['weight'],
+        'expanded' => $link['expanded'],
+      );
+      // Look the table first if the data does exist
+      $exists = db_query("SELECT mlid from {menu_links} WHERE link_title=:link_title AND link_path=:link_path", array(':link_title' =>  $link['link_title'], ':link_path' => $link['link_path']))->fetchField();
+      // Save the record if the data does not exist
+      if (!$exists) {  
+        menu_link_save($item);
+      }
+    }
+  }
+}
+
+/**
+ * Add extra menu links to the footer help menu item
+ */
+function flowdeveloper_update_7004() {
+
+  $links = array(
+    array(
+      array(
+        'link_title' => 'Support',
+        'link_path' => 'http://community.imgtec.com/forums/cat/flowcloud-developers',
+        'menu_name' => 'footer-menu-3',
+        'weight' => -10,
+        'expanded' => 0,
+      ),
+      array(
+        'link_title' => 'Privacy policy',
+        'link_path' => 'https://imgtec.com/privacy-policy/',
+        'menu_name' => 'footer-menu-3',
+        'weight' => 1,
+        'expanded' => 0,
+      ),
+    ),    
+  );
+  
+  $item = ''; 
+  foreach ($links as $layer1) {
+    foreach ($layer1 as $link) {
+      // Build an array of menu link 
+      $item = array(
+        'link_path' => $link['link_path'],
+        'link_title' => $link['link_title'],
+        'menu_name' => $link['menu_name'],
+        'weight' => $link['weight'],
+        'expanded' => $link['expanded'],
+      );
+      // Look the table first if the data does exist
+      $exists = db_query("SELECT mlid from {menu_links} WHERE link_title=:link_title AND link_path=:link_path", array(':link_title' =>  $link['link_title'], ':link_path' => $link['link_path']))->fetchField();
+      // Save the record if the data does not exist
+      if (!$exists) {  
+        menu_link_save($item);
+      }
+    }
+  }
+}
