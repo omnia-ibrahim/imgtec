@@ -1,0 +1,17 @@
+<form {{action "login" on="submit"}}>
+    <div class=''>
+        <div id='login_form_middle'>
+            {{paper-input flex=80 label="E-mail or username" type="email" value=email onChange=(action (mut email))}}
+            <br/>
+            {{paper-input flex=80 label="Password" type="password" value=password onChange=(action (mut password))}}
+            <br/>
+            {{input type="checkbox" name="rememberMe" checked=rememberMe}} Remember me
+            <br/>
+            <button type="submit">Sign in</button>
+            <br/>
+            {{#link-to 'login'}}Forgot Password?{{/link-to}}
+            
+        </div>
+    </div>
+</form>
+

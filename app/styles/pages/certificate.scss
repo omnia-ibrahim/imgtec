@@ -1,0 +1,18 @@
+.mdl-dialog__content {
+        .certificate-container {
+            background-color: #EFF6F5;
+            padding: 25px;
+            padding-bottom: 45px;
+            
+            .certificate {
+                color: #4a4a4a;
+            }
+            
+            .copy-button { 
+                float:right;
+                button {
+                    background-color:#F7F7F7;
+                }
+            }
+        }
+    }

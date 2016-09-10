@@ -1,0 +1,17 @@
+{{#each model as |certificate|}} 
+    <ul>
+        <li>Format: {{certificate.CertificateFormat}}</li>
+        
+        <form action="#">
+            <div class="mdl-textfield mdl-js-textfield" style="width:100%;">
+                <textarea class="mdl-textfield__input" type="text" rows= "7" columns="30" id="sample5" style="width:100%;">
+                    {{certificate.Data}}
+                </textarea>
+                <label class="mdl-textfield__label" for="sample5"></label>
+            </div>
+        </form>
+    </ul>
+           
+{{/each}}
+
+{{outlet}}

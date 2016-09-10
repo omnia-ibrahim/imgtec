@@ -1,0 +1,59 @@
+
+<section id="login-wrapper" class='col-sm-12'>
+
+  <div id='login_inner'  class="container">
+     <div id='login_header_image'></div>
+              <h1 class='login_form_container'> Developer Console </h1>
+  </div>
+
+
+
+<!-- -->
+<div id="login-tabs" class="container">	
+<ul class="nav nav-tabs">
+			<li class="active">
+        <a  href="#login" data-toggle="tab">Sign in</a>
+			</li>
+			<li><a href="#signup" data-toggle="tab">Sign up</a>
+			</li>			
+</ul>
+
+
+
+
+<!-- -->
+
+			<div class="tab-content ">
+<div id='login' class="tab-pane active">
+<div class='login_form_container col-sm-12'>
+  {{login-form}}  
+ </div>
+</div>
+
+
+<div id='signup' class=" tab-pane">
+<div class='login_form_container col-sm-12'>
+ <div class=''>
+   <div id='login_form_middle'>
+   {{paper-input flex=80 label="Username" type="username" value=username onChange=(action (mut username))}}
+   <br />
+    {{paper-input flex=80 label="E-mail" type="email" value=email onChange=(action (mut email))}}
+   <br />
+   {{paper-input flex=80 label="Password" type="password" value=password onChange=(action (mut password))}}
+ 
+      <br />
+             <button {{action "login"}}>Sign up</button>
+     </div>
+   </div>
+ </div>
+</div>
+
+
+</div>
+
+
+  </div>
+
+
+
+</section>

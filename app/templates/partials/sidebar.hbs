@@ -1,0 +1,15 @@
+<div class="mdl-layout__drawer">
+    <nav class="mdl-navigation">
+         {{#menu-click-handler}}
+            <section class="sidebar-menu">
+                <ul>
+                    <!--<li>{{#link-to 'index'}}{{paper-icon "home"}}<span>Home</span> {{/link-to}}</li>-->
+                    <li>{{#link-to 'metrics'}}{{paper-icon "trending-up"}}<span>Metrics</span> {{/link-to}}</li>
+                    <li>{{#link-to 'access-keys'}}{{paper-icon "vpn-key"}}<span>Access keys</span> {{/link-to}}</li>
+                    <li>{{#link-to 'certificates'}}{{paper-icon "fingerprint"}}<span>Certificates</span>{{/link-to}}</li>
+                    <li>{{#link-to 'clients'}}{{paper-icon "devices"}}<span>Clients</span> {{/link-to}}</li>
+                </ul>
+            </section>
+          {{/menu-click-handler}}
+    </nav>
+</div>

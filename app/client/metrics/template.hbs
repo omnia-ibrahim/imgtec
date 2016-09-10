@@ -1,0 +1,12 @@
+<div class="mdl-tabs__panel is-active" id="item-one-panel">
+		<div class="mdl-grid metrics-grid">
+			{{#each model as |metric|}}
+				<div class="mdl-cell mdl-cell--6-col">
+					{{#metric-card name=metric.Name}}
+						{{metric.Value}}
+					{{/metric-card}}
+				</div>
+			{{/each}}
+		</div>
+  </div>
+{{outlet}}

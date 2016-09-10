@@ -1,0 +1,106 @@
+<div class="page-title">Certificates
+	<span class="pull-right">
+		<!-- Raised button with ripple -->
+        <button {{action 'generate_certificate'}} class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
+            Get Certificate +
+        </button>
+	</span>
+</div>
+
+
+<style>
+    
+</style>
+
+<div class="page-description">
+    Certificates define how your clients access our API.
+    <span class="pull-right">
+        <i class="material-icons">info_outline</i> Learn how to develop clients
+    </span>
+</div>
+
+<div class="table-wrapper">
+    <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+    <thead>
+        <tr>
+            <th class="mdl-data-table__cell--non-numeric">Certificate</th>
+            <th>Created At</th>
+            <th class="pull-right"></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="cert-column">
+                <span id="certificate-1">
+                    hluYs/ySyfqsGxS...
+                </span>
+                <button {{action 'copy_certificate' '1'}} class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect copy-button">
+                    <i class="material-icons">content_copy</i>
+                    Copy
+                </button>
+            </td>
+            <td>May 19, 2016 11:35 AM</td>
+            <td><i class="material-icons pull-right">delete</i></td>
+        </tr>
+        <tr>
+            <td class="cert-column">
+                <span id="certificate-2">
+                    hluYs/ySyfqsGxS...
+                </span>
+                <button {{action 'copy_certificate' '2'}} class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect copy-button">
+                    <i class="material-icons">content_copy</i>
+                    Copy
+                </button>
+            </td>
+            <td>May 19, 2016 11:35 AM</td>
+            <td><i class="material-icons pull-right">delete</i></td>
+        </tr>
+    </tbody>
+    </table>
+</div>
+
+
+
+<dialog class="mdl-dialog">
+    <div class="mdl-dialog__header">
+        <h4 class="mdl-dialog__title">Generate Access Key</h4>
+    </div>
+    <div class="mdl-dialog__content">
+      <p> 
+          Your client certificate has been generated. Please copy and paste the code below into your client application to connect to our API in a secure manner.
+      </p>
+      
+      <div class="certificate-container">
+          
+          <div id="certificate-3" class="certificate">
+              -----BEGIN CERTIFICATE-----<br/>
+            MIIDXTCCAkWgAwIBAgIJAJC1HiIAZAiIMA0GCSqGSIb3Df
+            BAYTAkFVMRMwEQYDVQQIDApTb21lLVN0YXRlMSEwHwYDVx
+            aWRnaXRzIFB0eSBMdGQwHhcNMTExMjMxMDg1OTQ0WhcNMT
+            aWRnaXRzIFB0eSBMdGQwHhcNMTExMjMxMDg1OTQ0WhcNMT
+            aWRnaXRzIFB0eSBMdGQwHhcNMTExMjMxMDg1OTQ0WhcNMT
+            aWRnaXRzIFB0eSBMdGQwHhcNMTExMjMxMDg1OTQ0WhcNMT
+            aWRnaXRzIFB0eSBMdGQwHhcNMTExMjMxMDg1OTQ0WhcNMT
+            JjyzfN746vaInA1KxYEeI1Rx5KXY8zIdj6a7hhphpj2E04
+            C3Fayua4DRHyZOLmlvQ6tIChY0ClXXuefbmVSDeUHwc8Yu
+            B7xxt8BVc69rLeHV15A0qyx77CLSj3tCx2IUXVqRs5mlSb
+            vA==<br/>
+            -----END CERTIFICATE-----
+          </div>
+          
+         <div class="copy-button">
+             <!-- Raised button -->
+            <button {{action 'copy_certificate' '3'}} class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
+                <i class="material-icons">content_copy</i>
+                Copy
+            </button>
+         </div> 
+      </div>
+    </div>
+    <div class="mdl-dialog__actions">
+      <button {{action 'close_modal'}} type="button" class="mdl-button">Ok</button>
+      <button {{action 'close_modal'}} type="button" class="mdl-button">Cancel</button>
+    </div>
+  </dialog>
+
+{{outlet}}

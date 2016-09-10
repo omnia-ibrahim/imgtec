@@ -1,0 +1,125 @@
+
+html {
+  background: none;
+}
+$login-wrapper-width: 350px;
+
+#login_header_image {
+  background: url(img/logo-large-white.svg) no-repeat;  
+  width: 210px; 
+  height: 124px;
+  margin: 0 auto;
+  margin-top:40px;
+}
+
+#login-wrapper {
+    button {
+      color: white;  
+      background: $button-color;
+      border: none;
+     border-radius: 3px;
+      font-size: 20px;
+      text-align: center;
+      margin-top: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.24), 0 0 4px 0 rgba(0, 0, 0, 0.12);
+      width: 300px;
+      height: 40px;
+    } 
+    input.md-input    {
+        border: 1px solid $button-color; 
+        border-radius: 3px;
+        box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+        width: 300px;
+        height: 40px;
+        padding-left: 10px;
+    }
+}
+#login,
+#signup {
+  width: $login-wrapper-width; 
+  margin: 0 auto;
+}
+
+#login_inner {
+           margin-bottom: -10px;
+
+    :before {
+       text-align: center;
+       z-index: -1;
+       background: $primary-color;
+       position: absolute;
+        width: 100%;
+        height: 220px;
+        content: '';
+        top: 0;
+        left: 0;
+    }
+    h1 {
+        background: $title-header-bg;
+        border: $title-header-border;
+        font-size: 20px;
+        padding: 8px;
+        padding-bottom: 20px;
+        padding-top: 18px;
+        margin: 0 auto;
+        width: $login-wrapper-width;
+        height: 66px;
+        border-top-left-radius: 3px;
+        -webkit-border-top-left-radius: 3px;
+
+    border-top-right-radius: 3px;
+        -webkit-border-top-right-radius :3px;
+    }
+}
+.login_form_container {
+  text-align: center;
+  background: white;
+  border-bottom-left-radius: 3px;
+-webkit-border-bottom-left-radius: 3px;
+
+  border-bottom-right-radius: 3px;
+-webkit-border-bottom-right-radius :3px;
+  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+}
+
+#login_form {
+   margin-top: 20px;   
+    a {
+      color:  $links-color; 
+      font-size: 14px;
+      text-align: right;
+    }
+}
+
+#login_form_middle {
+  padding-top: 20px;
+  margin-bottom: 20px;
+  text-align: left;
+  padding-left: 7px;
+}
+#login-tabs {
+    li {
+        width: 50%;
+        text-align: center;
+        font-size: 18px;
+        color: #9b9b9b;        
+    }
+    li.active {
+       border-bottom: 3px solid #59a59c;
+    }
+    a {
+       color: #9b9b9b;
+       background: none;
+       border: none;
+    }
+    .active a {
+       color: #4a4a4a !important;
+    }
+    .nav-tabs {
+      width: $login-wrapper-width;
+      margin: 0 auto;
+      background: white;
+      box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+    }
+}

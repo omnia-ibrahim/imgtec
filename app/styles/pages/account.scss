@@ -1,0 +1,41 @@
+.account-tabs {
+    .user-profile {
+        max-width: 200px;
+        width: 100%;  
+        .user-profile-bar {
+            background-color: #eeeeee;
+            height: 50px;
+            padding: 15px 0 0 15px;
+            
+            .name {
+                font-size: 16px;
+                color: #4a4a4a;
+            }
+            
+            .more-options {
+                position: relative;
+                margin-right: 10px; 
+            }
+        }
+        
+        .user-profile-description {
+            margin-top: 15px;
+            font-size: 14px;
+            line-height: 1.4;
+            color: #4a4a4a;
+        }
+    }
+    
+    .user-details {
+        .section-title {
+            font-size: 24px;
+            line-height: 1.3;
+            color: rgba(0, 0, 0, 0.87);
+        }
+        
+        .mdl-textfield {
+            width:100%;
+        }
+    }
+    
+}
